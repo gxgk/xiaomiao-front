@@ -45,6 +45,16 @@
               <div class="nickname">{{ item.nickname }}</div>
 
               <div class="context">{{ item.context }}</div>
+              <div v-if="item.img_urls">
+                <van-image
+                  v-for="url in item.img_urls"
+                  :key="url"
+                  fit="contain"
+                  width="100"
+                  height="100"
+                  :src="url"
+                />
+              </div>
               <div class="bottom-bar">
                 <div class="time">{{ item.create_time }}</div>
                 <div class="icon">
@@ -61,10 +71,74 @@
     </div>
     <!-- <div class="partingLine">最新评论</div> -->
     <van-divider content-position="left">最新评论</van-divider>
-    <div id="commentList" />
+    <div class="comments-main" style="padding-bottom: 80px">
+      <van-list
+        v-model="bestList"
+        :loading="loadingBest"
+        :finished="finishedBest"
+        finished-text="没有更多了"
+        @load="onLoad"
+      >
+        <van-cell v-for="item in bestList" :key="item">
+          <div class="comment-box">
+            <van-image
+              width="4rem"
+              height="4rem"
+              radius="10"
+              round
+              fit="contain"
+              :src="item.head_img_url"
+            />
+            <div class="right">
+              <div class="nickname">{{ item.nickname }}</div>
+
+              <div class="context">{{ item.context }}</div>
+              <div v-if="item.img_urls">
+                <van-image
+                  v-for="url in item.img_urls"
+                  :key="url"
+                  fit="contain"
+                  width="100"
+                  height="100"
+                  :src="url"
+                />
+              </div>
+              <div class="bottom-bar">
+                <div class="time">{{ item.create_time }}</div>
+                <div class="icon">
+                  <vue-clap-button :size="20" :init-clicked="0" />
+                  <van-icon class="iconfont" class-prefix="icon" name="delete" :size="21" color="#909399" />
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </van-cell>
+      </van-list>
+    </div>
+
     <img class="musicBtn" src="@/assets/img/music.png">
     <van-button type="primary" class="join-button" @click="joinComment()">立即参与</van-button>
-    <van-popup v-model="showComment">内容</van-popup>
+    <van-popup v-model:show="showComment" position="bottom" closeable class="comment-popup" teleport="body">
+      <div style="padding: 10px 0;">发表评论</div>
+      <van-field
+        v-model="message"
+        rows="4"
+        autosize
+        safe-area-inset-bottom
+        label=""
+        type="textarea"
+        maxlength="200"
+        placeholder="请输入留言"
+        show-word-limit
+      />
+      <van-field label="图片上传">
+        <template #input>
+          <van-uploader :after-read="afterRead" />
+        </template>
+      </van-field>
+      <van-button type="primary" class="submit-button" @click="joinComment()">提交</van-button>
+    </van-popup>
   </div>
 
 </template>
@@ -85,8 +159,9 @@ export default {
       loadingBest: false,
       finishedBest: false,
       bestList: [{ 'nickname': 'NULL', 'head_img_url': 'http://thirdwx.qlogo.cn/mmopen/CJu3LWk6jKFBMmXZrf5rA3d8DI7to3vJTKU8m4KUdlLibusu6q3y7gS5gGhaVTfEVYmuLhoXuGeCibEq8DZhFj0g/132', context: '假期走起，甩掉丧丧。甩掉肥肉。让一切厄运随风消散，让沉入低谷的心重见光明。@小喵', create_time: '2020-01-01' },
-        { 'nickname': 'NULL', 'head_img_url': 'http://thirdwx.qlogo.cn/mmopen/CJu3LWk6jKFBMmXZrf5rA3d8DI7to3vJTKU8m4KUdlLibusu6q3y7gS5gGhaVTfEVYmuLhoXuGeCibEq8DZhFj0g/132', context: '假期走起，甩掉丧丧。甩掉肥肉。让一切厄运随风消散，让沉入低谷的心重见光明。@小喵', create_time: '2020-01-01' }],
-      showComment: false
+        { 'nickname': 'NULL', 'head_img_url': 'http://thirdwx.qlogo.cn/mmopen/CJu3LWk6jKFBMmXZrf5rA3d8DI7to3vJTKU8m4KUdlLibusu6q3y7gS5gGhaVTfEVYmuLhoXuGeCibEq8DZhFj0g/132', context: '假期走起，甩掉丧丧。甩掉肥肉。让一切厄运随风消散，让沉入低谷的心重见光明。@小喵', create_time: '2020-01-01', 'img_urls': ['https://photo.gxgkcat.com/xiaomiao/img/2020/10/20/U9DnLO0K4adt36alJBTztgQ1lQ7c77.png?imageView2/0/h/140'] }],
+      showComment: false,
+      message: ''
     }
   },
   methods: {
@@ -170,6 +245,16 @@ export default {
   left:0;
   right:0;
 }
+.submit-button {
+	background-color: #52a8ff;
+	border: none;
+	padding: 10px 0;
+  margin: 10px 0;
+	border-radius: 5px;
+	color: #fff;
+	box-shadow: 0 13px 10px -8px #52a8ff;
+  width: 300px;
+}
 .musicBtn {
   position: fixed;
   right: 30px;
@@ -212,5 +297,15 @@ export default {
   .context {
     padding: 5px 0;
   }
+}
+
+</style>
+<style>
+.comment-popup {
+  height: 45%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 </style>
