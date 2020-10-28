@@ -25,13 +25,13 @@
     <!-- <div class="partingLine">精选评论</div> -->
     <div class="comments-main">
       <van-list
-        v-model="bestList"
+        v-model="bestCommentList"
         :loading="loadingBest"
         :finished="finishedBest"
         finished-text="没有更多了"
         @load="onLoad"
       >
-        <van-cell v-for="item in bestList" :key="item">
+        <van-cell v-for="item in bestCommentList" :key="item.id">
           <div class="comment-box">
             <van-image
               width="4rem"
@@ -44,7 +44,7 @@
             <div class="right">
               <div class="nickname">{{ item.nickname }}</div>
 
-              <div class="context">{{ item.context }}</div>
+              <div class="context">{{ item.comment }}</div>
               <div v-if="item.img_urls">
                 <van-image
                   v-for="url in item.img_urls"
@@ -56,9 +56,9 @@
                 />
               </div>
               <div class="bottom-bar">
-                <div class="time">{{ item.create_time }}</div>
+                <div class="time">{{ item.time_str }}</div>
                 <div class="icon">
-                  <vue-clap-button :size="20" :init-clicked="0" />
+                  <vue-clap-button :size="20" :init-clicked="item.is_like" />
                   <van-icon class="iconfont" class-prefix="icon" name="delete" :size="21" color="#909399" />
                 </div>
               </div>
@@ -73,13 +73,13 @@
     <van-divider content-position="left">最新评论</van-divider>
     <div class="comments-main" style="padding-bottom: 80px">
       <van-list
-        v-model="bestList"
+        v-model="commentList"
         :loading="loadingBest"
         :finished="finishedBest"
         finished-text="没有更多了"
         @load="onLoad"
       >
-        <van-cell v-for="item in bestList" :key="item">
+        <van-cell v-for="item in commentList" :key="item.id">
           <div class="comment-box">
             <van-image
               width="4rem"
@@ -92,7 +92,7 @@
             <div class="right">
               <div class="nickname">{{ item.nickname }}</div>
 
-              <div class="context">{{ item.context }}</div>
+              <div class="context">{{ item.comment }}</div>
               <div v-if="item.img_urls">
                 <van-image
                   v-for="url in item.img_urls"
@@ -104,9 +104,9 @@
                 />
               </div>
               <div class="bottom-bar">
-                <div class="time">{{ item.create_time }}</div>
+                <div class="time">{{ item.time_str }}</div>
                 <div class="icon">
-                  <vue-clap-button :size="20" :init-clicked="0" />
+                  <vue-clap-button :size="20" :init-clicked="item.is_like" />
                   <van-icon class="iconfont" class-prefix="icon" name="delete" :size="21" color="#909399" />
                 </div>
               </div>
@@ -120,7 +120,7 @@
     <img class="musicBtn" src="@/assets/img/music.png">
     <van-button type="primary" class="join-button" @click="joinComment()">立即参与</van-button>
     <van-popup v-model:show="showComment" position="bottom" closeable class="comment-popup" teleport="body">
-      <div style="padding: 10px 0;">发表评论</div>
+      <div style="padding: 15px 0;">发表评论</div>
       <van-field
         v-model="message"
         rows="4"
@@ -144,6 +144,7 @@
 </template>
 
 <script>
+import { getCommentList, getTopic } from '@/api/topic'
 export default {
   name: 'Topic',
   components: {
@@ -151,20 +152,40 @@ export default {
   },
   data() {
     return {
-      topic_name: '冬天来了',
+      topic_name: '',
       comment_num: 100,
-      summary: '冬天要来了，大多数的人都随着气温的降低，情绪也变得有点丧。\n临近期末，对于大四的学生而言，是忙碌的。忙着做好大学最后一次期末考试复习准备，忙着写论文，制作简历寻找实习，忙着为考研或出国而努力。在被一堆事情压着的日子里，总有人不免变得丧气。\n想要大家分享一些令人愉悦的事情或者能让人重获能量的建议。毕竟，美好的生活要自己好好经营，希望大家都保持期待未来，人间值得的态度喔❤️',
-      picture_url: 'https://photo.gxgkcat.com/xiaomiao/img/2019/11/25/BeQRvkx6VYj9iVuPueOulRnKeITDZY.jpeg',
+      summary: '',
+      picture_url: '',
       mp3url: '',
       loadingBest: false,
       finishedBest: false,
-      bestList: [{ 'nickname': 'NULL', 'head_img_url': 'http://thirdwx.qlogo.cn/mmopen/CJu3LWk6jKFBMmXZrf5rA3d8DI7to3vJTKU8m4KUdlLibusu6q3y7gS5gGhaVTfEVYmuLhoXuGeCibEq8DZhFj0g/132', context: '假期走起，甩掉丧丧。甩掉肥肉。让一切厄运随风消散，让沉入低谷的心重见光明。@小喵', create_time: '2020-01-01' },
-        { 'nickname': 'NULL', 'head_img_url': 'http://thirdwx.qlogo.cn/mmopen/CJu3LWk6jKFBMmXZrf5rA3d8DI7to3vJTKU8m4KUdlLibusu6q3y7gS5gGhaVTfEVYmuLhoXuGeCibEq8DZhFj0g/132', context: '假期走起，甩掉丧丧。甩掉肥肉。让一切厄运随风消散，让沉入低谷的心重见光明。@小喵', create_time: '2020-01-01', 'img_urls': ['https://photo.gxgkcat.com/xiaomiao/img/2020/10/20/U9DnLO0K4adt36alJBTztgQ1lQ7c77.png?imageView2/0/h/140'] }],
+      bestCommentList: [],
+      commentList: [],
       showComment: false,
-      message: ''
+      message: '',
+      topicId: 12
     }
   },
+  created() {
+    this.getTopic()
+    this.fetchComment()
+  },
   methods: {
+    async getTopic() {
+      const resp = await getTopic({ 'topic_id': this.topicId })
+      console.log(resp)
+      this.topic_name = resp.data.topic_info.title
+      this.picture_url = resp.data.topic_info.picture_url
+      this.comment_num = resp.data.topic_comment_num
+      this.summary = resp.data.topic_info.summary
+      this.mp3url = resp.data.topic_info.mp3url
+    },
+    async fetchComment() {
+      const bestResp = await getCommentList({ 'topic_id': this.topicId, 'is_best': true })
+      this.bestCommentList = bestResp.data.rows
+      const resp = await getCommentList({ 'topic_id': this.topicId })
+      this.commentList = resp.data.rows
+    },
     joinComment() {
       this.showComment = true
     }
@@ -190,8 +211,9 @@ export default {
   /* text-shadow: 2px 3px 2px #000; */
 }
 .top_title {
-  width: 50%;
+  // width: 50%;
   background-color: rgb(255, 255, 255, 0.4);
+  padding: 10px 10px;
 }
 .top_artice p{
   font-size: 10px;
@@ -302,7 +324,7 @@ export default {
 </style>
 <style>
 .comment-popup {
-  height: 45%;
+  height: 48%;
   display: flex;
   flex-direction: column;
   justify-content: center;
