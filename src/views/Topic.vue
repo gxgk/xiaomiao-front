@@ -6,7 +6,7 @@
       <div class="top_artice">
         <div class="top_title">
           <div># {{ topicInfo.title }}#</div>
-          <p>{{ comment_num }}人参与</p>
+          <p style="margin: 4px 0">{{ comment_num }}人参与</p>
         </div>
       </div>
     </div>
