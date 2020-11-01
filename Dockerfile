@@ -1,7 +1,7 @@
 FROM node:12-alpine
 
-RUN apk add git
-
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+  apk add git
 RUN mkdir -p /home/src
 WORKDIR /home/src
 
