@@ -29,7 +29,7 @@ service.interceptors.response.use(
     if (Number(res.c) === 302) {
       const redirectUrl = encodeURIComponent(window.location.href)
       window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${res.d.appid}
-      &redirect_uri=${redirectUrl}&response_type=code&scope=${res.d.scope}&state=${res.d.state}#wechat_redirect`
+      &redirect_uri=${redirectUrl}&response_type=code&scope=${res.d.scope}&component_appid=${res.d.component_appid}&connect_redirect=1`
       return Promise.reject(new Error(response.data.m))
     } else if (Number(res.c) !== 0) {
       Toast.fail(res.m)
