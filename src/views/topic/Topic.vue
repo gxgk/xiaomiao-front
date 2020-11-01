@@ -284,7 +284,7 @@ export default {
         await addComment({ 'topic_id': this.topicId, 'comment': this.message, photo_ids: photoIds })
         this.message = ''
         this.fileList = []
-        Toast.success('提交成功')
+        Toast.success('提交成功，等待管理员审核')
         this.showComment = false
         this.fetchComment()
       } catch (error) {
