@@ -59,8 +59,8 @@
                 <div class="time">{{ item.time_str }}</div>
                 <div class="icon">
                   <vue-clap-button :size="20" :init-clicked="item.is_like" @click="handleLikeComment(item, false)" />
-                  <van-icon v-if="isAdmin" class="iconfont" class-prefix="icon" name="download" :size="16" color="#909399" @click="handleTopComment(item.id)" />
-                  <van-icon v-if="isAdmin || item.is_author" class="iconfont" class-prefix="icon" name="delete" :size="16" color="#909399" @click="handleDeleteComment(item.id)" />
+                  <van-icon v-if="isAdmin" class="iconfont" class-prefix="icon" name="download" :size="16" color="#909399" @click="handleTopComment(bestCommentList, item, false)" />
+                  <van-icon v-if="isAdmin || item.is_author" class="iconfont" class-prefix="icon" name="delete" :size="16" color="#909399" @click="handleDeleteComment(bestCommentList, item)" />
                 </div>
               </div>
 
@@ -109,8 +109,8 @@
                 <div class="time">{{ item.time_str }}</div>
                 <div class="icon">
                   <vue-clap-button :size="20" :init-clicked="item.is_like" @click="handleLikeComment(item, true)" />
-                  <van-icon v-if="isAdmin" class="iconfont" class-prefix="icon" name="upload" :size="16" color="#909399" @click="handleTopComment(item.id)" />
-                  <van-icon v-if="isAdmin || item.is_author" class="iconfont" class-prefix="icon" name="delete" :size="16" color="#909399" @click="handleDeleteComment(item.id)" />
+                  <van-icon v-if="isAdmin" class="iconfont" class-prefix="icon" name="upload" :size="16" color="#909399" @click="handleTopComment(commentList, item, true)" />
+                  <van-icon v-if="isAdmin || item.is_author" class="iconfont" class-prefix="icon" name="delete" :size="16" color="#909399" @click="handleDeleteComment(commentList, item)" />
                 </div>
               </div>
 
@@ -154,7 +154,7 @@ import { List, Toast } from 'vant'
 import { ImagePreview } from 'vant'
 import { Dialog } from 'vant'
 import { JsSdkShareMixin } from '@/mixins/CommonMixin'
-import { getCommentList, getTopic, deleteComment, likeComment, topComment, addComment } from '@/api/topic'
+import { getCommentList, getTopic, deleteComment, likeComment, setCommentState, addComment } from '@/api/topic'
 import { uploadPhoto } from '@/api/photo'
 export default {
   name: 'Topic',
@@ -299,31 +299,33 @@ export default {
     async handleLikeComment(row) {
       await likeComment({ 'topic_id': this.topicId, 'comment_id': row.id })
     },
-    handleTopComment(commentId, top) {
+    handleTopComment(commentList, item, top) {
       Dialog.confirm({
         title: '提示',
         message: top ? '确认置顶该评论？' : '确认取消置顶该评论？'
       })
         .then(async() => {
           // on confirm
-          await topComment({ 'topic_id': this.topicId, 'comment_id': commentId })
+          await setCommentState({ 'comment_id': item.id, 'state': top ? '2' : '1' })
           Toast.success(top ? '置顶成功' : '取消置顶成功')
-          this.fetchComment()
+          const index = commentList.findIndex(obj => obj.id === item.id)
+          commentList.splice(index, 1)
         })
         .catch(() => {
           // on cancel
         })
     },
-    handleDeleteComment(commentId) {
+    handleDeleteComment(commentList, item) {
       Dialog.confirm({
         title: '提示',
         message: '确认删除该评论？'
       })
         .then(async() => {
           // on confirm
-          await deleteComment({ 'topic_id': this.topicId, 'comment_id': commentId })
+          await deleteComment({ 'topic_id': this.topicId, 'comment_id': item.id })
           Toast.success('删除成功')
-          this.fetchComment()
+          const index = commentList.findIndex(obj => obj.id === item.id)
+          commentList.splice(index, 1)
         })
         .catch(() => {
           // on cancel

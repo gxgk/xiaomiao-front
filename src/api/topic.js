@@ -32,17 +32,17 @@ export function likeComment(data) {
   })
 }
 
-export function topComment(data) {
+export function addComment(data) {
   return request({
-    url: '/topic/top_comment',
+    url: '/topic/add_comment',
     method: 'post',
     data: data
   })
 }
 
-export function addComment(data) {
+export function setCommentState(data) {
   return request({
-    url: '/topic/add_comment',
+    url: '/topic/set_comment_state',
     method: 'post',
     data: data
   })

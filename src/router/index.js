@@ -16,7 +16,18 @@ const routes = [
     // route level code-splitting
     // this generates a separate chunk (topic.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "topic" */ '../views/Topic.vue')
+    component: () => import(/* webpackChunkName: "topic" */ '../views/topic/Topic.vue')
+  },
+  {
+    path: '/topic/check',
+    name: 'TopicCheck',
+    meta: {
+      title: '喵话题审核'
+    },
+    // route level code-splitting
+    // this generates a separate chunk (topic.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "topic" */ '../views/topic/TopicCheck.vue')
   }
 ]
 
