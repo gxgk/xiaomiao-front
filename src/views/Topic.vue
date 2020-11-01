@@ -1,11 +1,11 @@
 <template>
   <div class="topic">
-    <audio id="music" loop="loop" preload="auto" :src="mp3url" />
+    <audio id="music" loop="loop" preload="auto" :src="topicInfo.mp3url" />
     <div class="top_img">
-      <van-image width="100%" :src="picture_url" />
+      <van-image width="100%" :src="topicInfo.picture_url" />
       <div class="top_artice">
         <div class="top_title">
-          <div># {{ topic_name }}#</div>
+          <div># {{ topicInfo.title }}#</div>
           <p>{{ comment_num }}人参与</p>
         </div>
       </div>
@@ -16,7 +16,7 @@
       </div>
       <div class="summary">
         <p>
-          {{ summary }}
+          {{ topicInfo.summary }}
         </p>
 
       </div>
@@ -28,8 +28,8 @@
         v-model="bestCommentList"
         :loading="loadingBest"
         :finished="finishedBest"
-        finished-text="没有更多了"
-        @load="onLoad"
+        finished-text=""
+        @load="onBestCommentLoad"
       >
         <van-cell v-for="item in bestCommentList" :key="item.id">
           <div class="comment-box">
@@ -58,8 +58,9 @@
               <div class="bottom-bar">
                 <div class="time">{{ item.time_str }}</div>
                 <div class="icon">
-                  <vue-clap-button :size="20" :init-clicked="item.is_like" />
-                  <van-icon class="iconfont" class-prefix="icon" name="delete" :size="21" color="#909399" />
+                  <vue-clap-button :size="20" :init-clicked="item.is_like" @click="handleLikeComment(item, false)" />
+                  <van-icon v-if="isAdmin" class="iconfont" class-prefix="icon" name="download" :size="16" color="#909399" @click="handleTopComment(item.id)" />
+                  <van-icon v-if="isAdmin || item.is_author" class="iconfont" class-prefix="icon" name="delete" :size="16" color="#909399" @click="handleDeleteComment(item.id)" />
                 </div>
               </div>
 
@@ -74,10 +75,10 @@
     <div class="comments-main" style="padding-bottom: 80px">
       <van-list
         v-model="commentList"
-        :loading="loadingBest"
-        :finished="finishedBest"
+        :loading="loadingComment"
+        :finished="finishedComment"
         finished-text="没有更多了"
-        @load="onLoad"
+        @load="onCommentLoad"
       >
         <van-cell v-for="item in commentList" :key="item.id">
           <div class="comment-box">
@@ -106,8 +107,9 @@
               <div class="bottom-bar">
                 <div class="time">{{ item.time_str }}</div>
                 <div class="icon">
-                  <vue-clap-button :size="20" :init-clicked="item.is_like" />
-                  <van-icon class="iconfont" class-prefix="icon" name="delete" :size="21" color="#909399" />
+                  <vue-clap-button :size="20" :init-clicked="item.is_like" @click="handleLikeComment(item, true)" />
+                  <van-icon v-if="isAdmin" class="iconfont" class-prefix="icon" name="upload" :size="16" color="#909399" @click="handleTopComment(item.id)" />
+                  <van-icon v-if="isAdmin || item.is_author" class="iconfont" class-prefix="icon" name="delete" :size="16" color="#909399" @click="handleDeleteComment(item.id)" />
                 </div>
               </div>
 
@@ -121,30 +123,36 @@
     <van-button type="primary" class="join-button" @click="joinComment()">立即参与</van-button>
     <van-popup v-model:show="showComment" position="bottom" closeable class="comment-popup" teleport="body">
       <div style="padding: 15px 0;">发表评论</div>
-      <van-field
-        v-model="message"
-        rows="4"
-        autosize
-        safe-area-inset-bottom
-        label=""
-        type="textarea"
-        maxlength="200"
-        placeholder="请输入留言"
-        show-word-limit
-      />
-      <van-field label="图片上传">
-        <template #input>
-          <van-uploader :after-read="afterRead" />
-        </template>
-      </van-field>
-      <van-button type="primary" class="submit-button" @click="joinComment()">提交</van-button>
+      <van-form class="submit-form" @submit="submitComment" @failed="onFailed">
+        <van-field
+          v-model="message"
+          rows="4"
+          autosize
+          safe-area-inset-bottom
+          label=""
+          type="textarea"
+          maxlength="200"
+          placeholder="请输入评论"
+          show-word-limit
+          :rules="[{ required: true, message: '请填写评论' }]"
+        />
+        <van-field label="图片上传">
+          <template #input>
+            <van-uploader ref="upload" v-model="fileList" :after-read="afterRead" :max-count="3" multiple deletable />
+          </template>
+        </van-field>
+        <van-button type="primary" round class="submit-button" native-type="submit">提交</van-button>
+      </van-form>
     </van-popup>
   </div>
 
 </template>
 
 <script>
-import { getCommentList, getTopic } from '@/api/topic'
+import { Toast } from 'vant'
+import { Dialog } from 'vant'
+import { getCommentList, getTopic, deleteComment, likeComment, topComment, addComment } from '@/api/topic'
+import { uploadPhoto } from '@/api/photo'
 export default {
   name: 'Topic',
   components: {
@@ -152,46 +160,159 @@ export default {
   },
   data() {
     return {
-      topic_name: '',
+      topicInfo: {},
       comment_num: 100,
-      summary: '',
-      picture_url: '',
-      mp3url: '',
       loadingBest: false,
       finishedBest: false,
+      lastBestCommentId: 0,
       bestCommentList: [],
       commentList: [],
       showComment: false,
       message: '',
-      topicId: 12
+      topicId: 0,
+      isAdmin: false,
+      fileList: [],
+      finishedComment: false,
+      loadingComment: false,
+      lastCommentId: 0
     }
   },
   created() {
-    this.getTopic()
-    this.fetchComment()
+    // await this.getTopic()
+    // this.fetchComment()
   },
   methods: {
     async getTopic() {
       const resp = await getTopic({ 'topic_id': this.topicId })
       console.log(resp)
-      this.topic_name = resp.data.topic_info.title
-      this.picture_url = resp.data.topic_info.picture_url
+      this.topicInfo = resp.data.topic_info
       this.comment_num = resp.data.topic_comment_num
-      this.summary = resp.data.topic_info.summary
-      this.mp3url = resp.data.topic_info.mp3url
+      this.isAdmin = resp.data.is_admin
+      this.topicId = resp.data.topic_info.id
+    },
+    async onBestCommentLoad() {
+      this.loadingBest = true
+      if (!this.topicId) {
+        await this.getTopic()
+      }
+      const resp = await getCommentList({ 'topic_id': this.topicId, 'last_comment_id': this.lastBestCommentId, 'is_best': true })
+      this.loadingBest = false
+      if (resp.d.rows.length === 0) {
+        this.finishedBest = true
+        return
+      }
+      this.bestCommentList = [...this.bestCommentList, ...resp.d.rows]
+      this.lastBestCommentId = resp.d.last_comment_id
+    },
+    async onCommentLoad() {
+      this.loadingComment = true
+      if (!this.topicId) {
+        await this.getTopic()
+      }
+      const resp = await getCommentList({ 'topic_id': this.topicId, 'last_comment_id': this.lastCommentId })
+      this.loadingComment = false
+      if (resp.d.rows.length === 0) {
+        this.finishedComment = true
+        return
+      }
+      console.log(resp.d.rows)
+      this.commentList = [...this.commentList, ...resp.d.rows]
+      this.lastCommentId = resp.d.last_comment_id
     },
     async fetchComment() {
-      const bestResp = await getCommentList({ 'topic_id': this.topicId, 'is_best': true })
-      this.bestCommentList = bestResp.data.rows
-      const resp = await getCommentList({ 'topic_id': this.topicId })
-      this.commentList = resp.data.rows
+      this.bestCommentList = []
+      this.lastBestCommentId = 0
+      this.onBestCommentLoad()
+      this.lastCommentId = 0
+      this.commentList = []
+      this.onCommentLoad()
     },
     joinComment() {
       this.showComment = true
+    },
+    async submitComment() {
+      const photoIds = []
+      for (const i in this.fileList) {
+        photoIds.push(this.fileList[i].photoId)
+      }
+      console.log(photoIds)
+      try {
+        await addComment({ 'topic_id': this.topicId, 'comment': this.message, photo_ids: photoIds })
+        this.message = ''
+        Toast.success('提交成功')
+        this.showComment = false
+        this.fetchComment()
+      } catch (error) {
+        console.log(error)
+        this.showComment = true
+      }
+    },
+    onFailed(errorInfo) {
+      console.log('failed', errorInfo)
+      this.showComment = true
+    },
+    async handleLikeComment(row) {
+      await likeComment({ 'topic_id': this.topicId, 'comment_id': row.id })
+    },
+    handleTopComment(commentId, top) {
+      Dialog.confirm({
+        title: '提示',
+        message: top ? '确认置顶该评论？' : '确认取消置顶该评论？'
+      })
+        .then(async() => {
+          // on confirm
+          await topComment({ 'topic_id': this.topicId, 'comment_id': commentId })
+          Toast.success(top ? '置顶成功' : '取消置顶成功')
+          this.fetchComment()
+        })
+        .catch(() => {
+          // on cancel
+        })
+    },
+    handleDeleteComment(commentId) {
+      Dialog.confirm({
+        title: '提示',
+        message: '确认删除该评论？'
+      })
+        .then(async() => {
+          // on confirm
+          await deleteComment({ 'topic_id': this.topicId, 'comment_id': commentId })
+          Toast.success('删除成功')
+          this.fetchComment()
+        })
+        .catch(() => {
+          // on cancel
+        })
+    },
+    async afterRead(file, detail) {
+      // file.status = 'uploading'
+      // file.message = '上传中...'
+
+      const formdata = new FormData()
+      formdata.append('photo_files', file.file)
+      try {
+        const resp = await uploadPhoto(formdata)
+        console.log(resp)
+        file.status = 'done'
+        file.message = '上传成功'
+        file.photoId = resp.d.photo_ids[0]
+        file.url = resp.d.photo_list[0].img_url
+      } catch (error) {
+        console.log(error)
+        file.status = 'failed'
+        file.message = '上传失败'
+      }
+      console.log(file)
     }
   }
 }
 </script>
+<style>
+.vclapbtn-bin-wrap svg {
+  width: 16px;
+  height: 16px;
+}
+</style>
 <style scoped lang="scss" rel="stylesheet/scss">
 .top_img img{
 	width: 100%;
@@ -296,17 +417,19 @@ export default {
     display: flex;
     justify-content: space-between;
     flex-direction: row;
+    font-size: 8pt;
 
     .icon {
       display: flex;
       flex-direction: row;
-      justify-content: space-around;
+      justify-content: right;
       align-items: center;
-      width: 50px;
+      padding-left: 3px;
+      // width: 80px;
 
       .iconfont {
         vertical-align: baseline;
-        transform: translateY(calc(50% - 0.5em))
+        transform: translateY(calc(50% - 0.7em))
       }
     }
   }
@@ -317,14 +440,20 @@ export default {
     font-family: SimHei;
   }
   .context {
-    padding: 5px 0;
+    padding-top: 5px;
+    padding-bottom: 10px;
   }
 }
-
+.submit-form {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 90%;
+  display: flex;
+}
 </style>
 <style>
 .comment-popup {
-  height: 48%;
   display: flex;
   flex-direction: column;
   justify-content: center;

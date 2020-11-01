@@ -15,3 +15,35 @@ export function getCommentList(data) {
     data: data
   })
 }
+
+export function deleteComment(data) {
+  return request({
+    url: '/topic/delete_comment',
+    method: 'post',
+    data: data
+  })
+}
+
+export function likeComment(data) {
+  return request({
+    url: '/topic/like_comment',
+    method: 'post',
+    data: data
+  })
+}
+
+export function topComment(data) {
+  return request({
+    url: '/topic/top_comment',
+    method: 'post',
+    data: data
+  })
+}
+
+export function addComment(data) {
+  return request({
+    url: '/topic/add_comment',
+    method: 'post',
+    data: data
+  })
+}

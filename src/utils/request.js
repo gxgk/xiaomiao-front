@@ -24,9 +24,9 @@ service.interceptors.response.use(
      * code为非20000是抛错 可结合自己业务进行修改
      */
     const res = response.data
-    if (Number(res.code) !== 200) {
-      Toast.fail(res.msg)
-      return Promise.reject(new Error(response.data.msg))
+    if (Number(res.c) !== 0) {
+      Toast.fail(res.m)
+      return Promise.reject(new Error(response.data.m))
     } else {
       return response.data
     }

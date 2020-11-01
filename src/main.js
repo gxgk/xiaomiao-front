@@ -1,10 +1,11 @@
 import '@/assets/icon/iconfont.css'
-import { Button, Cell, CellGroup, Dialog, Divider, Field, Icon, Image as VanImage, List, Notify, Popup, Skeleton, Toast, Uploader } from 'vant'
+import { Button, Cell, CellGroup, Dialog, Divider, Field, Form, Icon, Image as VanImage, List, Notify, Popup, Skeleton, Toast, Uploader } from 'vant'
 import { createApp } from 'vue'
 import vueClapButton from 'vue-clap-button'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+
 // 将 Toast 等组件注册到 app 上
 const app = createApp(App)
 app.use(Toast)
@@ -22,6 +23,7 @@ app.use(Dialog)
 app.use(Popup)
 app.use(Field)
 app.use(Uploader)
+app.use(Form)
 app.use(vueClapButton)
 app.use(store)
 app.use(router)
