@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { Toast } from 'vant'
 
+const APP_ID = 'wx8703c0de5603e9ac'
+
 // 创建axios实例
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // api的base_url
@@ -9,7 +11,7 @@ const service = axios.create({
 
 // request拦截器
 service.interceptors.request.use(config => {
-  config.headers['AppId'] = 'wx8703c0de5603e9ac'
+  config.headers['AppId'] = APP_ID
   return config
 }, error => {
   // Do something with request error
@@ -25,7 +27,10 @@ service.interceptors.response.use(
      */
     const res = response.data
     if (Number(res.c) === 302) {
-      window.location.href = response.data.d.url
+      let redirectUrl = window.location.href
+      redirectUrl = encodeURIComponent(redirectUrl)
+      window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${APP_ID}
+      &redirect_uri=${redirectUrl}&response_type=code&scope=snsapi_userinfo&state=123#wechat_redirect`
       return Promise.reject(new Error(response.data.m))
     } else if (Number(res.c) !== 0) {
       Toast.fail(res.m)
