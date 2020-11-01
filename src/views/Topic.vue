@@ -1,6 +1,6 @@
 <template>
   <div class="topic">
-    <audio id="audio" loop="loop" preload="auto" :src="topicInfo.mp3url" />
+    <audio id="audio" loop="loop" preload="auto" autoplay="autoplay" :src="topicInfo.mp3url" />
     <div class="top_img">
       <van-image width="100%" :src="topicInfo.picture_url" />
       <div class="top_artice">

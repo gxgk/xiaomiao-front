@@ -13,7 +13,8 @@
     "vue": "^3.0.2",
     "vue-clap-button": "git+https://github.com/NullYing/vue-clap-button.git",
     "vue-router": "^4.0.0-0",
-    "vuex": "^4.0.0-rc.1"
+    "vuex": "^4.0.0-rc.1",
+    "weixin-js-sdk": "^1.6.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
@@ -49,7 +50,15 @@
   },
   "browserslist": [
     "> 1%",
-    "last 2 versions",
-    "not dead"
+    "ie >= 8",
+    "edge >= 15",
+    "ie_mob >= 10",
+    "ff >= 45",
+    "chrome >= 45",
+    "safari >= 7",
+    "opera >= 23",
+    "ios >= 7",
+    "android >= 4",
+    "bb >= 10"
   ]
 }
