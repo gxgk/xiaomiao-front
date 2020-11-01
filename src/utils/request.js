@@ -27,10 +27,9 @@ service.interceptors.response.use(
      */
     const res = response.data
     if (Number(res.c) === 302) {
-      let redirectUrl = window.location.href
-      redirectUrl = encodeURIComponent(redirectUrl)
-      window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${APP_ID}
-      &redirect_uri=${redirectUrl}&response_type=code&scope=snsapi_userinfo&state=123#wechat_redirect`
+      const redirectUrl = encodeURIComponent(window.location.href)
+      window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${res.d.appid}
+      &redirect_uri=${redirectUrl}&response_type=code&scope=${res.d.scope}&state=${res.d.state}#wechat_redirect`
       return Promise.reject(new Error(response.data.m))
     } else if (Number(res.c) !== 0) {
       Toast.fail(res.m)
