@@ -1,0 +1,7 @@
+version: "3"
+services:
+    xiaomiao-front:
+      container_name: xiaomiao-front
+      build: .
+      volumes:
+        - ./:/home/src
