@@ -23,6 +23,7 @@ export const JsSdkShareMixin = {
       wx.config(resp.d.jsapi)
       wx.ready(() => {
         wx.updateAppMessageShareData(this.shareData)
+        wx.updateTimelineShareData(this.shareData)
       })
     }
   }
