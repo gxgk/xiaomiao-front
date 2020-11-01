@@ -208,7 +208,9 @@ export default {
   methods: {
     playMusic() {
       var audio = document.getElementById('audio')
-      audio.play()
+      window.WeixinJSBridge.invoke('getNetworkType', {}, (e) => {
+        audio.play()
+      })
     },
     async getTopic() {
       const resp = await getTopic({ 'topic_id': this.topicId })
