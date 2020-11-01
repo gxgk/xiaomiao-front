@@ -96,12 +96,13 @@
               <div class="context">{{ item.comment }}</div>
               <div v-if="item.img_urls">
                 <van-image
-                  v-for="url in item.img_urls"
+                  v-for="(url, index) in item.img_urls"
                   :key="url"
                   fit="contain"
                   width="100"
                   height="100"
                   :src="url"
+                  @click="imgPreview(item.img_urls, index)"
                 />
               </div>
               <div class="bottom-bar">
@@ -149,7 +150,8 @@
 </template>
 
 <script>
-import { Toast } from 'vant'
+import { List, Toast } from 'vant'
+import { ImagePreview } from 'vant'
 import { Dialog } from 'vant'
 import { getCommentList, getTopic, deleteComment, likeComment, topComment, addComment } from '@/api/topic'
 import { uploadPhoto } from '@/api/photo'
@@ -239,6 +241,7 @@ export default {
       try {
         await addComment({ 'topic_id': this.topicId, 'comment': this.message, photo_ids: photoIds })
         this.message = ''
+        this.fileList = []
         Toast.success('提交成功')
         this.showComment = false
         this.fetchComment()
@@ -284,25 +287,41 @@ export default {
           // on cancel
         })
     },
-    async afterRead(file, detail) {
+    async afterRead(fileList, detail) {
+      // Vant or Vue Bug
       // file.status = 'uploading'
       // file.message = '上传中...'
-
-      const formdata = new FormData()
-      formdata.append('photo_files', file.file)
-      try {
-        const resp = await uploadPhoto(formdata)
-        console.log(resp)
-        file.status = 'done'
-        file.message = '上传成功'
-        file.photoId = resp.d.photo_ids[0]
-        file.url = resp.d.photo_list[0].img_url
-      } catch (error) {
-        console.log(error)
-        file.status = 'failed'
-        file.message = '上传失败'
+      if (typeof fileList !== List) {
+        fileList = [fileList]
       }
-      console.log(file)
+
+      for (const file of fileList) {
+        console.log(file)
+        // file.status = 'uploading'
+        // file.message = '上传中...'
+
+        const formdata = new FormData()
+        formdata.append('photo_files', file.file)
+        try {
+          const resp = await uploadPhoto(formdata)
+          console.log(resp)
+          file.status = 'done'
+          file.message = '上传成功'
+          file.photoId = resp.d.photo_ids[0]
+          file.url = resp.d.photo_list[0].img_url
+        } catch (error) {
+          console.log(error)
+          file.status = 'failed'
+          file.message = '上传失败'
+        }
+        console.log(file)
+      }
+    },
+    imgPreview(images, startPosition) {
+      ImagePreview({
+        images: images,
+        startPosition: startPosition
+      })
     }
   }
 }

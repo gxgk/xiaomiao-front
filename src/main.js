@@ -1,5 +1,5 @@
 import '@/assets/icon/iconfont.css'
-import { Button, Cell, CellGroup, Dialog, Divider, Field, Form, Icon, Image as VanImage, List, Notify, Popup, Skeleton, Toast, Uploader } from 'vant'
+import { Button, Cell, CellGroup, Dialog, Divider, Field, Form, Icon, Image as VanImage, ImagePreview, List, Notify, Popup, Toast, Uploader } from 'vant'
 import { createApp } from 'vue'
 import vueClapButton from 'vue-clap-button'
 import App from './App.vue'
@@ -14,7 +14,7 @@ app.use(Notify)
 app.use(VanImage)
 app.use(Button)
 app.use(Divider)
-app.use(Skeleton)
+app.use(ImagePreview)
 app.use(List)
 app.use(Cell)
 app.use(CellGroup)
