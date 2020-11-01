@@ -22,11 +22,7 @@ export const JsSdkShareMixin = {
       const resp = await getJsSdk({ 'signature_url': window.location.href })
       wx.config(resp.d.jsapi)
       wx.ready(() => {
-        wx.onMenuShareTimeline(this.shareData)
-        wx.onMenuShareAppMessage(this.shareData)
-        wx.onMenuShareQQ(this.shareData)
-        wx.onMenuShareWeibo(this.shareData)
-        wx.onMenuShareQZone(this.shareData)
+        wx.updateAppMessageShareData(this.shareData)
       })
     }
   }
