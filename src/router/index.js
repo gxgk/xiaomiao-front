@@ -10,6 +10,9 @@ const routes = [
   {
     path: '/topic',
     name: 'Topic',
+    meta: {
+      title: '喵话题'
+    },
     // route level code-splitting
     // this generates a separate chunk (topic.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
@@ -20,6 +23,14 @@ const routes = [
 const router = createRouter({
   history: createWebHashHistory(),
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  // 路由发生变化修改页面title
+  if (to.meta.title) {
+    document.title = to.meta.title
+  }
+  next()
 })
 
 export default router
