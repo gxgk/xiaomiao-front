@@ -1,6 +1,6 @@
 <template>
   <div class="topic">
-    <audio id="music" loop="loop" preload="auto" :src="topicInfo.mp3url" />
+    <audio id="audio" loop="loop" preload="auto" :src="topicInfo.mp3url" />
     <div class="top_img">
       <van-image width="100%" :src="topicInfo.picture_url" />
       <div class="top_artice">
@@ -120,7 +120,7 @@
       </van-list>
     </div>
 
-    <img class="musicBtn" src="@/assets/img/music.png">
+    <img id="musicBtn" class="musicBtn musicSpin" :class="{ 'musicSpinPause': !isMusicActive }" src="@/assets/img/music.png" @click="musicClick">
     <van-button type="primary" class="join-button" @click="joinComment()">立即参与</van-button>
     <van-popup v-model:show="showComment" position="bottom" closeable class="comment-popup" teleport="body">
       <div style="padding: 15px 0;">发表评论</div>
@@ -176,14 +176,40 @@ export default {
       fileList: [],
       finishedComment: false,
       loadingComment: false,
-      lastCommentId: 0
+      lastCommentId: 0,
+      isMusicActive: true
     }
   },
   created() {
-    // await this.getTopic()
-    // this.fetchComment()
+    // this.playMusic()
+  },
+  mounted() {
+    if (typeof WeixinJSBridge === 'undefined') {
+      if (document.addEventListener) {
+        document.addEventListener(
+          'WeixinJSBridgeReady',
+          this.playMusic,
+          false
+        )
+      } else if (document.attachEvent) {
+        document.attachEvent(
+          'WeixinJSBridgeReady',
+          this.playMusic
+        )
+        document.attachEvent(
+          'onWeixinJSBridgeReady',
+          this.playMusic
+        )
+      }
+    } else {
+      this.playMusic()
+    }
   },
   methods: {
+    playMusic() {
+      var audio = document.getElementById('audio')
+      audio.play()
+    },
     async getTopic() {
       const resp = await getTopic({ 'topic_id': this.topicId })
       console.log(resp)
@@ -322,6 +348,16 @@ export default {
         images: images,
         startPosition: startPosition
       })
+    },
+    musicClick() {
+      this.isMusicActive = !this.isMusicActive
+
+      var audio = document.getElementById('audio')
+      if (!this.isMusicActive) {
+        audio.pause()
+      } else {
+        audio.play()
+      }
     }
   }
 }
@@ -422,6 +458,34 @@ export default {
   right: 30px;
   top: 30px;
 }
+
+.musicSpin {
+    animation: musicSpin 2.2s linear infinite;
+    -webkit-animation: musicSpin 2.2s linear infinite
+}
+
+.musicSpinPause {
+  animation-play-state: paused;
+}
+
+@keyframes musicSpin {
+    0% {
+        transform: rotate(0deg)
+    }
+    100% {
+        transform: rotate(360deg)
+    }
+}
+
+@-webkit-keyframes musicSpin {
+    0% {
+        -webkit-transform: rotate(0deg)
+    }
+    100% {
+        -webkit-transform: rotate(360deg)
+    }
+}
+
 .comments-main {
 
 }
