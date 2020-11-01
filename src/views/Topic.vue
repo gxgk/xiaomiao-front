@@ -6,7 +6,7 @@
       <div class="top_artice">
         <div class="top_title">
           <div># {{ topicInfo.title }}#</div>
-          <p style="margin: 4px 0">{{ comment_num }}人参与</p>
+          <p style="margin: 4px 0">{{ commentNum }}人参与</p>
         </div>
       </div>
     </div>
@@ -153,17 +153,18 @@
 import { List, Toast } from 'vant'
 import { ImagePreview } from 'vant'
 import { Dialog } from 'vant'
+import { JsSdkShareMixin } from '@/mixins/CommonMixin'
 import { getCommentList, getTopic, deleteComment, likeComment, topComment, addComment } from '@/api/topic'
 import { uploadPhoto } from '@/api/photo'
 export default {
   name: 'Topic',
   components: {
-
   },
+  mixins: [JsSdkShareMixin],
   data() {
     return {
       topicInfo: {},
-      comment_num: 100,
+      commentNum: 100,
       loadingBest: false,
       finishedBest: false,
       lastBestCommentId: 0,
@@ -177,7 +178,13 @@ export default {
       finishedComment: false,
       loadingComment: false,
       lastCommentId: 0,
-      isMusicActive: true
+      isMusicActive: true,
+      shareData: {
+        title: document.title, // 分享标题
+        desc: '', // 分享描述
+        link: window.location.href,
+        imgUrl: '' // 分享图标
+      }
     }
   },
   created() {
@@ -215,10 +222,17 @@ export default {
     async getTopic() {
       const resp = await getTopic({ 'topic_id': this.topicId })
       console.log(resp)
-      this.topicInfo = resp.data.topic_info
-      this.comment_num = resp.data.topic_comment_num
-      this.isAdmin = resp.data.is_admin
-      this.topicId = resp.data.topic_info.id
+      this.topicInfo = resp.d.topic_info
+      this.commentNum = resp.d.topic_comment_num
+      this.isAdmin = resp.d.is_admin
+      this.topicId = resp.d.topic_info.id
+
+      this.shareData = {
+        title: this.topicInfo.title, // 分享标题
+        desc: this.topicInfo.summary, // 分享描述
+        link: window.location.href,
+        imgUrl: this.topicInfo.picture_url // 分享图标
+      }
     },
     async onBestCommentLoad() {
       this.loadingBest = true
