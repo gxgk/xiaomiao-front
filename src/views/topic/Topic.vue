@@ -525,7 +525,7 @@ export default {
       flex-direction: row;
       justify-content: right;
       align-items: center;
-      padding-left: 3px;
+      padding-left: 6px;
       // width: 80px;
 
       .iconfont {
