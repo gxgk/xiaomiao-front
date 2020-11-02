@@ -50,6 +50,7 @@
 
 <script>
 import { Toast } from 'vant'
+import { ImagePreview } from 'vant'
 import { Dialog } from 'vant'
 import { getCommentList, setCommentState } from '@/api/topic'
 export default {
@@ -97,6 +98,12 @@ export default {
         .catch(() => {
           // on cancel
         })
+    },
+    imgPreview(images, startPosition) {
+      ImagePreview({
+        images: images,
+        startPosition: startPosition
+      })
     }
   }
 }
