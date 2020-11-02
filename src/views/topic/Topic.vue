@@ -5,7 +5,7 @@
       <van-image width="100%" :src="topicInfo.picture_url" />
       <div class="top_artice">
         <div class="top_title">
-          <div># {{ topicInfo.title }}#</div>
+          <div># {{ topicInfo.title }} #</div>
           <p style="margin: 4px 0">{{ commentNum }}人参与</p>
         </div>
       </div>
