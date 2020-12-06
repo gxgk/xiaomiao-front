@@ -332,17 +332,14 @@ export default {
         })
     },
     async afterRead(fileList, detail) {
-      // Vant or Vue Bug
-      // file.status = 'uploading'
-      // file.message = '上传中...'
       if (typeof fileList !== List) {
         fileList = [fileList]
       }
 
       for (const file of fileList) {
         console.log(file)
-        // file.status = 'uploading'
-        // file.message = '上传中...'
+        file.status = 'uploading'
+        file.message = '上传中...'
 
         const formdata = new FormData()
         formdata.append('photo_files', file.file)
