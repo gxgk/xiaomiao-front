@@ -27,7 +27,7 @@ service.interceptors.response.use(
      */
     const res = response.data
     if (Number(res.c) === 302) {
-      const redirectUrl = `${res.d.callback}?callback_url=${encodeURIComponent(window.location.href)}&app_id=${res.d.appid}`
+      const redirectUrl = `${res.d.callback}?callback_url=${encodeURIComponent(window.location.origin + window.location.pathname)}&app_id=${res.d.appid}`
       window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${res.d.appid}` +
       `&redirect_uri=${encodeURIComponent(redirectUrl)}&response_type=code&scope=${res.d.scope}&component_appid=${res.d.component_appid}&connect_redirect=1`
       return Promise.reject(new Error(response.data.m))
